@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Validador de Cédula Dominicana | UASD</title>
+    <meta name="description" content="Validador de cédulas dominicanas usando algoritmo Módulo 10 - Arowarlin UASD">
+    <meta name="author" content="Arowarlin - UASD">
+    <title>Validador de Cédula - Arowarlin UASD</title>
     <style>
         * {
             margin: 0;
@@ -15,71 +17,124 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
             padding: 20px;
         }
 
         .container {
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            padding: 40px;
-            max-width: 600px;
-            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
         }
 
-        .header {
+        header {
             text-align: center;
-            margin-bottom: 30px;
+            color: white;
+            margin-bottom: 40px;
+            animation: fadeInDown 0.8s ease;
         }
 
-        .header h1 {
-            color: #333;
-            font-size: 2rem;
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
             margin-bottom: 10px;
         }
 
-        .header .subtitle {
-            color: #666;
-            font-size: 1rem;
+        .author-info {
+            font-size: 0.95rem;
+            opacity: 0.85;
+            margin-top: 15px;
         }
 
-        .badge {
-            display: inline-block;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            margin-top: 10px;
+        .author-info p {
+            margin: 5px 0;
         }
 
-        .input-group {
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            animation: fadeInUp 0.8s ease;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-group {
             margin-bottom: 20px;
         }
 
-        .input-group label {
+        .form-group label {
             display: block;
-            color: #333;
-            font-weight: 600;
             margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
         }
 
-        .input-group input {
+        .form-group input {
             width: 100%;
-            padding: 15px;
+            padding: 12px 15px;
             border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            font-size: 1.1rem;
+            border-radius: 8px;
+            font-size: 1rem;
             transition: all 0.3s;
         }
 
-        .input-group input:focus {
+        .form-group input:focus {
             outline: none;
             border-color: #667eea;
             box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-group small {
+            display: block;
+            margin-top: 5px;
+            color: #666;
+            font-size: 0.85rem;
         }
 
         .btn {
@@ -88,20 +143,33 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
-            border-radius: 10px;
+            border-radius: 8px;
             font-size: 1.1rem;
             font-weight: 600;
             cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: all 0.3s;
         }
 
-        .btn:hover {
+        .btn:hover:not(:disabled) {
             transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
         }
 
-        .btn:active {
+        .btn:active:not(:disabled) {
             transform: translateY(0);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            box-shadow: 0 5px 15px rgba(17, 153, 142, 0.4);
         }
 
         .resultado {
@@ -109,317 +177,582 @@
             padding: 20px;
             border-radius: 10px;
             display: none;
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
         }
 
         .resultado.valido {
-            background: #d4edda;
-            border: 2px solid #28a745;
-            color: #155724;
-            display: block;
+            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+            border-left: 5px solid #4caf50;
         }
 
         .resultado.invalido {
-            background: #f8d7da;
-            border: 2px solid #dc3545;
-            color: #721c24;
-            display: block;
+            background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+            border-left: 5px solid #f44336;
         }
 
-        .resultado h3 {
-            margin-bottom: 10px;
+        .resultado-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .icono {
+            font-size: 2rem;
+        }
+
+        .resultado-header h3 {
             font-size: 1.3rem;
+            margin: 0;
         }
 
-        .resultado p {
-            margin: 5px 0;
-            line-height: 1.6;
+        .detalle-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .detalle-item:last-child {
+            border-bottom: none;
+        }
+
+        .detalle-label {
+            font-weight: 600;
+            color: #666;
+        }
+
+        .detalle-valor {
+            font-weight: 500;
+            color: #333;
         }
 
         .stats {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            grid-template-columns: repeat(4, 1fr);
             gap: 15px;
-            margin-top: 30px;
+            margin-bottom: 20px;
         }
 
         .stat-card {
-            background: #f8f9fa;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
             padding: 20px;
             border-radius: 10px;
             text-align: center;
+            transition: transform 0.3s;
         }
 
-        .stat-card .number {
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-number {
             font-size: 2rem;
             font-weight: bold;
-            color: #667eea;
-            display: block;
+            margin-bottom: 5px;
         }
 
-        .stat-card .label {
-            color: #666;
+        .stat-label {
             font-size: 0.9rem;
-            margin-top: 5px;
+            opacity: 0.9;
         }
 
-        .historial {
-            margin-top: 30px;
-        }
-
-        .historial h2 {
-            color: #333;
-            margin-bottom: 15px;
-            font-size: 1.5rem;
-        }
-
-        .historial-lista {
-            max-height: 300px;
+        .historial-container {
+            max-height: 500px;
             overflow-y: auto;
-            background: #f8f9fa;
+        }
+
+        .historial-container::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .historial-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
             border-radius: 10px;
-            padding: 15px;
+        }
+
+        .historial-container::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 10px;
+        }
+
+        .historial-container::-webkit-scrollbar-thumb:hover {
+            background: #764ba2;
         }
 
         .historial-item {
-            background: white;
-            padding: 12px;
+            background: #f5f5f5;
+            padding: 15px;
             border-radius: 8px;
             margin-bottom: 10px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            transition: all 0.3s;
         }
 
-        .historial-item .cedula {
+        .historial-item:hover {
+            background: #eeeeee;
+            transform: translateX(5px);
+        }
+
+        .historial-item.valido {
+            border-left: 4px solid #4caf50;
+        }
+
+        .historial-item.invalido {
+            border-left: 4px solid #f44336;
+        }
+
+        .historial-info {
+            flex: 1;
+        }
+
+        .historial-cedula {
             font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 5px;
             color: #333;
         }
 
-        .historial-item .estado {
-            padding: 5px 12px;
+        .historial-fecha {
+            font-size: 0.85rem;
+            color: #666;
+        }
+
+        .badge {
+            padding: 5px 15px;
             border-radius: 20px;
             font-size: 0.85rem;
             font-weight: 600;
         }
 
-        .historial-item .estado.valido {
-            background: #d4edda;
-            color: #155724;
+        .badge.valido {
+            background: #4caf50;
+            color: white;
         }
 
-        .historial-item .estado.invalido {
-            background: #f8d7da;
-            color: #721c24;
+        .badge.invalido {
+            background: #f44336;
+            color: white;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+            font-size: 1rem;
+        }
+
+        footer {
+            text-align: center;
+            color: white;
+            margin-top: 40px;
+            opacity: 0.9;
+        }
+
+        footer p {
+            margin: 5px 0;
         }
 
         .loading {
-            text-align: center;
-            color: #666;
-            padding: 20px;
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+            vertical-align: middle;
+            margin-right: 8px;
         }
 
-        .footer {
-            text-align: center;
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 2px solid #e0e0e0;
-            color: #666;
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
 
-        @media (max-width: 600px) {
-            .container {
-                padding: 25px;
-            }
-            
-            .header h1 {
-                font-size: 1.5rem;
+        .info-box {
+            background: linear-gradient(135deg, #fff3cd 0%, #fff9e6 100%);
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .info-box h3 {
+            color: #856404;
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+        }
+
+        .info-box p {
+            color: #856404;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
             }
 
             .stats {
                 grid-template-columns: repeat(2, 1fr);
+            }
+
+            header h1 {
+                font-size: 2rem;
+            }
+
+            .card {
+                padding: 20px;
+            }
+
+            .stat-number {
+                font-size: 1.5rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            header h1 {
+                font-size: 1.5rem;
+            }
+
+            .subtitle {
+                font-size: 0.95rem;
+            }
+
+            .author-info {
+                font-size: 0.85rem;
+            }
+
+            .card {
+                padding: 15px;
             }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1>🇩🇴 Validador de Cédula</h1>
-            <p class="subtitle">República Dominicana</p>
-            <span class="badge">Algoritmo Módulo 10 | Arowarlin - UASD</span>
+        <header>
+            <h1>🪪 Validador de Cédula de Identidad</h1>
+            <p class="subtitle">Sistema de validación usando algoritmo Módulo 10</p>
+            <div class="author-info">
+                <p><strong>Desarrollado por:</strong> Arowarlin</p>
+                <p><strong>Universidad:</strong> Universidad Autónoma de Santo Domingo (UASD)</p>
+            </div>
+        </header>
+
+        <div class="grid">
+            <!-- Tarjeta de Validación -->
+            <div class="card">
+                <h2>✏️ Validar Cédula</h2>
+                <form id="formularioValidacion">
+                    <div class="form-group">
+                        <label for="cedula">Número de cédula:</label>
+                        <input 
+                            type="text" 
+                            id="cedula" 
+                            name="cedula" 
+                            placeholder="001-2134457-7" 
+                            maxlength="13"
+                            required
+                            autocomplete="off"
+                        >
+                        <small>Formato: XXX-XXXXXXX-X (11 dígitos)</small>
+                    </div>
+                    
+                    <button type="submit" class="btn" id="btnValidar">Validar Cédula</button>
+                </form>
+
+                <div id="resultado" class="resultado">
+                    <div class="resultado-header">
+                        <span class="icono" id="iconoResultado"></span>
+                        <h3 id="tituloResultado"></h3>
+                    </div>
+                    <div id="detallesResultado"></div>
+                </div>
+
+                <div class="info-box">
+                    <h3>💡 Cédulas de Prueba</h3>
+                    <p>
+                        <strong>Válidas:</strong> 001-2134457-7, 402-1234567-4<br>
+                        <strong>Inválida:</strong> 001-2134457-4
+                    </p>
+                </div>
+            </div>
+
+            <!-- Tarjeta de Estadísticas -->
+            <div class="card">
+                <h2>📊 Estadísticas</h2>
+                <div id="estadisticas" class="stats">
+                    <div class="stat-card">
+                        <div class="stat-number" id="statTotal">0</div>
+                        <div class="stat-label">Total</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="statValidas">0</div>
+                        <div class="stat-label">Válidas</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="statInvalidas">0</div>
+                        <div class="stat-label">Inválidas</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="statPorcentaje">0%</div>
+                        <div class="stat-label">Éxito</div>
+                    </div>
+                </div>
+                <button class="btn btn-secondary" onclick="cargarEstadisticas()">🔄 Actualizar Estadísticas</button>
+            </div>
+
+            <!-- Tarjeta de Historial -->
+            <div class="card full-width">
+                <h2>📜 Historial de Validaciones</h2>
+                <button class="btn btn-secondary" onclick="cargarHistorial()" style="margin-bottom: 20px;">📋 Cargar Historial (Últimas 20)</button>
+                <div class="historial-container" id="historialContainer">
+                    <div id="historial"></div>
+                </div>
+            </div>
         </div>
 
-        <div class="input-group">
-            <label for="cedula">Número de Cédula</label>
-            <input 
-                type="text" 
-                id="cedula" 
-                placeholder="Ej: 00121344577 o 001-2134457-7"
-                maxlength="13"
-            >
-        </div>
-
-        <button class="btn" onclick="validarCedula()">
-            ✓ Validar Cédula
-        </button>
-
-        <div id="resultado" class="resultado"></div>
-
-        <div class="stats" id="estadisticas">
-            <div class="stat-card">
-                <span class="number" id="total">0</span>
-                <span class="label">Total</span>
-            </div>
-            <div class="stat-card">
-                <span class="number" id="validas">0</span>
-                <span class="label">Válidas</span>
-            </div>
-            <div class="stat-card">
-                <span class="number" id="invalidas">0</span>
-                <span class="label">Inválidas</span>
-            </div>
-            <div class="stat-card">
-                <span class="number" id="porcentaje">0%</span>
-                <span class="label">Efectividad</span>
-            </div>
-        </div>
-
-        <div class="historial">
-            <h2>📜 Historial Reciente</h2>
-            <div id="historial-lista" class="historial-lista">
-                <p class="loading">Cargando historial...</p>
-            </div>
-        </div>
-
-        <div class="footer">
-            <p><strong>Arowarlin</strong> | Universidad Autónoma de Santo Domingo</p>
-            <p style="font-size: 0.9rem; margin-top: 5px;">Sistema de validación con almacenamiento en la nube</p>
-        </div>
+        <footer>
+            <p>Sistema de Validación de Cédula v1.0 | Arowarlin - UASD 2024</p>
+            <p>Powered by Supabase + Render</p>
+        </footer>
     </div>
 
     <script>
-        // Cargar estadísticas al iniciar
-        cargarEstadisticas();
-        cargarHistorial();
+        const API_URL = window.location.origin;
 
-        // Permitir validar con Enter
-        document.getElementById('cedula').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                validarCedula();
-            }
-        });
-
-        async function validarCedula() {
+        // Event listener para el formulario
+        document.getElementById('formularioValidacion').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
             const cedulaInput = document.getElementById('cedula');
             const cedula = cedulaInput.value.trim();
-            const resultadoDiv = document.getElementById('resultado');
-
+            
             if (!cedula) {
-                mostrarResultado('Por favor ingrese una cédula', false);
+                alert('⚠️ Por favor ingrese un número de cédula');
                 return;
             }
+            
+            await validarCedula(cedula);
+        });
 
+        // Formateo automático mientras se escribe
+        document.getElementById('cedula').addEventListener('input', (e) => {
+            let valor = e.target.value.replace(/\D/g, '');
+            
+            if (valor.length > 3 && valor.length <= 10) {
+                valor = valor.slice(0, 3) + '-' + valor.slice(3);
+            } else if (valor.length > 10) {
+                valor = valor.slice(0, 3) + '-' + valor.slice(3, 10) + '-' + valor.slice(10, 11);
+            }
+            
+            e.target.value = valor;
+        });
+
+        // Función para validar cédula
+        async function validarCedula(cedula) {
+            const btnValidar = document.getElementById('btnValidar');
+            const originalText = btnValidar.innerHTML;
+            
+            btnValidar.disabled = true;
+            btnValidar.innerHTML = '<span class="loading"></span> Validando...';
+            
             try {
-                const response = await fetch('/api/validar', {
+                const response = await fetch(`${API_URL}/api/validar`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({ cedula })
                 });
-
-                const data = await response.json();
-
-                if (data.valido) {
-                    const info = data.informacion;
-                    const mensaje = `
-                        <h3>✓ Cédula Válida</h3>
-                        <p><strong>Cédula:</strong> ${info.cedulaFormateada}</p>
-                        <p><strong>Secuencia:</strong> ${info.secuencia}</p>
-                        <p><strong>Número:</strong> ${info.numeroDocumento}</p>
-                        <p><strong>Dígito Verificador:</strong> ${info.digitoVerificador} (Calculado: ${data.digitoCalculado})</p>
-                        <p style="margin-top: 10px; color: #155724;">${data.mensaje}</p>
-                    `;
-                    mostrarResultado(mensaje, true);
-                } else {
-                    const mensaje = `
-                        <h3>✗ Cédula Inválida</h3>
-                        <p><strong>Cédula ingresada:</strong> ${cedula}</p>
-                        <p><strong>Dígito ingresado:</strong> ${data.digitoVerificador}</p>
-                        <p><strong>Dígito correcto:</strong> ${data.digitoCalculado}</p>
-                        <p style="margin-top: 10px; color: #721c24;">${data.mensaje}</p>
-                    `;
-                    mostrarResultado(mensaje, false);
+                
+                if (!response.ok) {
+                    throw new Error(`Error HTTP: ${response.status}`);
                 }
-
-                // Actualizar estadísticas e historial
+                
+                const data = await response.json();
+                
+                if (data.error) {
+                    mostrarError(data.error);
+                    return;
+                }
+                
+                mostrarResultado(data);
                 cargarEstadisticas();
-                cargarHistorial();
-
-                // Limpiar input
-                cedulaInput.value = '';
-                cedulaInput.focus();
-
+                
             } catch (error) {
                 console.error('Error:', error);
-                mostrarResultado('Error al conectar con el servidor', false);
+                mostrarError('❌ Error al conectar con el servidor. Por favor, intenta de nuevo.');
+            } finally {
+                btnValidar.disabled = false;
+                btnValidar.innerHTML = originalText;
             }
         }
 
-        function mostrarResultado(mensaje, valido) {
+        // Función para mostrar resultado
+        function mostrarResultado(data) {
             const resultadoDiv = document.getElementById('resultado');
-            resultadoDiv.innerHTML = mensaje;
-            resultadoDiv.className = `resultado ${valido ? 'valido' : 'invalido'}`;
+            const iconoResultado = document.getElementById('iconoResultado');
+            const tituloResultado = document.getElementById('tituloResultado');
+            const detallesDiv = document.getElementById('detallesResultado');
+            
+            resultadoDiv.className = 'resultado';
+            resultadoDiv.classList.add(data.valido ? 'valido' : 'invalido');
+            resultadoDiv.style.display = 'block';
+            
+            iconoResultado.textContent = data.valido ? '✓' : '✗';
+            tituloResultado.textContent = data.valido ? 'Cédula Válida' : 'Cédula Inválida';
+            
+            let detallesHTML = '';
+            
+            if (data.informacion) {
+                detallesHTML = `
+                    <div class="detalle-item">
+                        <span class="detalle-label">Cédula:</span>
+                        <span class="detalle-valor">${data.informacion.cedulaFormateada}</span>
+                    </div>
+                    <div class="detalle-item">
+                        <span class="detalle-label">Secuencia:</span>
+                        <span class="detalle-valor">${data.informacion.secuencia}</span>
+                    </div>
+                    <div class="detalle-item">
+                        <span class="detalle-label">Documento:</span>
+                        <span class="detalle-valor">${data.informacion.numeroDocumento}</span>
+                    </div>
+                    <div class="detalle-item">
+                        <span class="detalle-label">Dígito Verificador:</span>
+                        <span class="detalle-valor">${data.digitoVerificador}</span>
+                    </div>
+                    <div class="detalle-item">
+                        <span class="detalle-label">Dígito Calculado:</span>
+                        <span class="detalle-valor">${data.digitoCalculado}</span>
+                    </div>
+                    <div class="detalle-item">
+                        <span class="detalle-label">Resultado:</span>
+                        <span class="detalle-valor">${data.mensaje}</span>
+                    </div>
+                `;
+            }
+            
+            detallesDiv.innerHTML = detallesHTML;
+            
+            resultadoDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
 
+        // Función para mostrar errores
+        function mostrarError(mensaje) {
+            const resultadoDiv = document.getElementById('resultado');
+            const iconoResultado = document.getElementById('iconoResultado');
+            const tituloResultado = document.getElementById('tituloResultado');
+            const detallesDiv = document.getElementById('detallesResultado');
+            
+            resultadoDiv.className = 'resultado invalido';
+            resultadoDiv.style.display = 'block';
+            
+            iconoResultado.textContent = '⚠';
+            tituloResultado.textContent = 'Error';
+            detallesDiv.innerHTML = `<div class="detalle-item"><p style="text-align: center; width: 100%;">${mensaje}</p></div>`;
+            
+            resultadoDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        // Función para cargar estadísticas
         async function cargarEstadisticas() {
             try {
-                const response = await fetch('/api/estadisticas');
-                const data = await response.json();
-
-                document.getElementById('total').textContent = data.total;
-                document.getElementById('validas').textContent = data.validas;
-                document.getElementById('invalidas').textContent = data.invalidas;
-                document.getElementById('porcentaje').textContent = data.porcentajeValidas + '%';
-            } catch (error) {
-                console.error('Error cargando estadísticas:', error);
-            }
-        }
-
-        async function cargarHistorial() {
-            try {
-                const response = await fetch('/api/historial?limit=10');
-                const data = await response.json();
-
-                const historialDiv = document.getElementById('historial-lista');
-
-                if (data.validaciones && data.validaciones.length > 0) {
-                    historialDiv.innerHTML = data.validaciones.map(v => `
-                        <div class="historial-item">
-                            <span class="cedula">${formatearCedula(v.cedula)}</span>
-                            <span class="estado ${v.valido ? 'valido' : 'invalido'}">
-                                ${v.valido ? '✓ Válida' : '✗ Inválida'}
-                            </span>
-                        </div>
-                    `).join('');
-                } else {
-                    historialDiv.innerHTML = '<p class="loading">No hay validaciones registradas</p>';
+                const response = await fetch(`${API_URL}/api/estadisticas`);
+                
+                if (!response.ok) {
+                    throw new Error(`Error HTTP: ${response.status}`);
                 }
+                
+                const data = await response.json();
+                
+                document.getElementById('statTotal').textContent = data.total;
+                document.getElementById('statValidas').textContent = data.validas;
+                document.getElementById('statInvalidas').textContent = data.invalidas;
+                document.getElementById('statPorcentaje').textContent = `${data.porcentajeValidas}%`;
+                
             } catch (error) {
-                console.error('Error cargando historial:', error);
-                document.getElementById('historial-lista').innerHTML = 
-                    '<p class="loading">Error al cargar historial</p>';
+                console.error('Error al cargar estadísticas:', error);
             }
         }
 
-        function formatearCedula(cedula) {
-            // Formato: XXX-XXXXXXX-X
-            const limpia = cedula.replace(/\D/g, '');
-            if (limpia.length === 11) {
-                return `${limpia.substring(0, 3)}-${limpia.substring(3, 10)}-${limpia.substring(10)}`;
+        // Función para cargar historial
+        async function cargarHistorial() {
+            const historialDiv = document.getElementById('historial');
+            historialDiv.innerHTML = '<div class="no-data"><span class="loading"></span> Cargando historial...</div>';
+            
+            try {
+                const response = await fetch(`${API_URL}/api/historial?limit=20`);
+                
+                if (!response.ok) {
+                    throw new Error(`Error HTTP: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                if (data.validaciones.length === 0) {
+                    historialDiv.innerHTML = '<div class="no-data">📭 No hay validaciones registradas aún</div>';
+                    return;
+                }
+                
+                let html = '';
+                data.validaciones.forEach(v => {
+                    const fecha = new Date(v.fecha).toLocaleString('es-DO', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                    const clase = v.valido ? 'valido' : 'invalido';
+                    const badgeTexto = v.valido ? 'VÁLIDA' : 'INVÁLIDA';
+                    
+                    const cedulaFormateada = v.cedula.length === 11 
+                        ? `${v.cedula.slice(0,3)}-${v.cedula.slice(3,10)}-${v.cedula.slice(10)}`
+                        : v.cedula;
+                    
+                    html += `
+                        <div class="historial-item ${clase}">
+                            <div class="historial-info">
+                                <div class="historial-cedula">${cedulaFormateada}</div>
+                                <div class="historial-fecha">🕐 ${fecha}</div>
+                            </div>
+                            <span class="badge ${clase}">${badgeTexto}</span>
+                        </div>
+                    `;
+                });
+                
+                historialDiv.innerHTML = html;
+                
+            } catch (error) {
+                console.error('Error al cargar historial:', error);
+                historialDiv.innerHTML = '<div class="no-data">❌ Error al cargar el historial. Intenta de nuevo.</div>';
             }
-            return cedula;
         }
+
+        // Cargar estadísticas al iniciar
+        window.addEventListener('load', () => {
+            cargarEstadisticas();
+            document.getElementById('cedula').focus();
+        });
     </script>
 </body>
 </html>
+
