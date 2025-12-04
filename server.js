@@ -5,10 +5,12 @@ require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const { validarCedula } = require('./validator');
-const supabase = require('./supabaseClient');
 
 const app = express();
 const PORT = process.env.PORT || 10000;
+
+// Almacenamiento en memoria (temporal, se borra al reiniciar)
+let validaciones = [];
 
 // ============================================
 // MIDDLEWARES
@@ -16,7 +18,15 @@ const PORT = process.env.PORT || 10000;
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// CRÍTICO: Servir archivos estáticos desde la carpeta 'public'
+// CORS para desarrollo
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type');
+  next();
+});
+
+// Servir archivos estáticos desde la carpeta 'public'
 app.use(express.static(path.join(__dirname, 'public')));
 
 // ============================================
@@ -31,6 +41,7 @@ app.get('/api/info', (req, res) => {
     universidad: 'UASD',
     algoritmo: 'Módulo 10',
     version: '1.0.0',
+    almacenamiento: 'Memoria (temporal)',
     endpoints: [
       'GET /api/info',
       'POST /api/validar',
@@ -55,87 +66,66 @@ app.post('/api/validar', async (req, res) => {
     // Validar la cédula usando el algoritmo
     const resultado = validarCedula(cedula);
 
-    // Guardar en la base de datos
-    const { data, error } = await supabase
-      .from('validaciones')
-      .insert([
-        {
-          cedula: cedula.replace(/\D/g, ''),
-          valido: resultado.valido,
-          digito_verificador: resultado.digitoVerificador,
-          digito_calculado: resultado.digitoCalculado,
-          mensaje: resultado.mensaje
-        }
-      ])
-      .select();
+    // Guardar en memoria
+    const registro = {
+      id: validaciones.length + 1,
+      cedula: cedula.replace(/\D/g, ''),
+      valido: resultado.valido,
+      digitoVerificador: resultado.digitoVerificador,
+      digitoCalculado: resultado.digitoCalculado,
+      mensaje: resultado.mensaje,
+      fecha: new Date().toISOString()
+    };
 
-    if (error) {
-      console.error('Error guardando en Supabase:', error);
-      // Aún así retornamos el resultado de validación
-      return res.json({
-        ...resultado,
-        nota: 'Validación exitosa pero no se pudo guardar en base de datos'
-      });
+    validaciones.unshift(registro); // Agregar al inicio
+
+    // Limitar a últimas 100 validaciones
+    if (validaciones.length > 100) {
+      validaciones = validaciones.slice(0, 100);
     }
 
-    // Agregar el ID del registro a la respuesta
+    // Retornar resultado
     res.json({
       ...resultado,
-      id: data[0]?.id
+      id: registro.id
     });
 
   } catch (error) {
     console.error('Error en /api/validar:', error);
     res.status(500).json({
       error: 'Error del servidor',
-      mensaje: 'Ocurrió un error al procesar la validación'
+      mensaje: 'Ocurrió un error al procesar la validación',
+      detalles: error.message
     });
   }
 });
 
 // Ruta para obtener el historial
-app.get('/api/historial', async (req, res) => {
+app.get('/api/historial', (req, res) => {
   try {
     const limit = parseInt(req.query.limit) || 50;
-
-    const { data, error } = await supabase
-      .from('validaciones')
-      .select('*')
-      .order('fecha', { ascending: false })
-      .limit(limit);
-
-    if (error) {
-      throw error;
-    }
+    const historial = validaciones.slice(0, limit);
 
     res.json({
-      total: data.length,
-      validaciones: data
+      total: historial.length,
+      validaciones: historial
     });
 
   } catch (error) {
     console.error('Error en /api/historial:', error);
     res.status(500).json({
       error: 'Error del servidor',
-      mensaje: 'No se pudo obtener el historial'
+      mensaje: 'No se pudo obtener el historial',
+      detalles: error.message
     });
   }
 });
 
 // Ruta para obtener estadísticas
-app.get('/api/estadisticas', async (req, res) => {
+app.get('/api/estadisticas', (req, res) => {
   try {
-    // Obtener todas las validaciones
-    const { data, error } = await supabase
-      .from('validaciones')
-      .select('valido');
-
-    if (error) {
-      throw error;
-    }
-
-    const total = data.length;
-    const validas = data.filter(v => v.valido).length;
+    const total = validaciones.length;
+    const validas = validaciones.filter(v => v.valido).length;
     const invalidas = total - validas;
     const porcentajeValidas = total > 0 ? ((validas / total) * 100).toFixed(2) : 0;
 
@@ -150,18 +140,39 @@ app.get('/api/estadisticas', async (req, res) => {
     console.error('Error en /api/estadisticas:', error);
     res.status(500).json({
       error: 'Error del servidor',
-      mensaje: 'No se pudieron obtener las estadísticas'
+      mensaje: 'No se pudieron obtener las estadísticas',
+      detalles: error.message
     });
   }
 });
 
 // ============================================
+// HEALTH CHECK
+// ============================================
+app.get('/health', (req, res) => {
+  res.json({ 
+    status: 'OK', 
+    uptime: process.uptime(),
+    timestamp: new Date().toISOString()
+  });
+});
+
+// ============================================
 // RUTA CATCH-ALL PARA SPA
 // ============================================
-// Esta ruta debe ir AL FINAL de todas las rutas de API
-// Sirve el index.html para cualquier ruta que no sea de API
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// ============================================
+// MANEJO DE ERRORES
+// ============================================
+app.use((err, req, res, next) => {
+  console.error('Error no manejado:', err);
+  res.status(500).json({
+    error: 'Error interno del servidor',
+    mensaje: err.message
+  });
 });
 
 // ============================================
@@ -169,7 +180,18 @@ app.get('*', (req, res) => {
 // ============================================
 app.listen(PORT, () => {
   console.log('========================================');
-  console.log(`Servidor corriendo en puerto ${PORT}`);
-  console.log('Arowarlin - UASD');
+  console.log(`✓ Servidor corriendo en puerto ${PORT}`);
+  console.log('✓ Arowarlin - UASD');
+  console.log('✓ Almacenamiento: Memoria (temporal)');
   console.log('========================================');
 });
+
+// Manejo de errores del proceso
+process.on('uncaughtException', (error) => {
+  console.error('Error no capturado:', error);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Promesa rechazada no manejada:', reason);
+});
+
